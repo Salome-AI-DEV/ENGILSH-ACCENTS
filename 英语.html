@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2487.2">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!doctype html&gt;</p>
+<p class="p1">&lt;html&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1">&lt;meta charset="utf-8" /&gt;</p>
+<p class="p1">&lt;title&gt;B站滑块分段编辑器（在线版）&lt;/title&gt;</p>
+<p class="p1">&lt;style&gt;</p>
+<p class="p1">body { font-family: sans-serif; padding: 20px; }</p>
+<p class="p1">#player iframe { width: 100%; height: 400px; }</p>
+<p class="p1">.segment-bar { position: relative; width: 100%; height: 30px; background: #eee; margin: 10px 0; }</p>
+<p class="p1">.segment { position: absolute; height: 100%; background: #06c; color: white; text-align: center; cursor: move; border-radius: 4px; }</p>
+<p class="p1">table { border-collapse: collapse; width: 100%; margin-top: 10px; }</p>
+<p class="p1">th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }</p>
+<p class="p1">tr:hover { background-color: #eef; cursor: pointer; }</p>
+<p class="p1">&lt;/style&gt;</p>
+<p class="p1">&lt;script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"&gt;&lt;/script&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1">&lt;h2&gt;B站滑块分段编辑器（在线版）&lt;/h2&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;label&gt;BV号：&lt;/label&gt;</p>
+<p class="p1">&lt;input id="bvid" placeholder="BV号" style="width:50%;" value="BV1BbeezcEDK"/&gt;</p>
+<p class="p1">&lt;button onclick="loadPlayerAndSegments()"&gt;加载播放器 + 分段&lt;/button&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;div id="player"&gt;&lt;/div&gt;</p>
+<p class="p1">&lt;div id="segmentBars"&gt;&lt;/div&gt;</p>
+<p class="p1">&lt;div id="tableDiv"&gt;&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1">// 初始分段数据（每段约2分钟）</p>
+<p class="p1">let segmentsData = [</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:0,end:120,title:"片头介绍"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:120,end:240,title:"第一部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:240,end:360,title:"第二部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:360,end:480,title:"第三部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:480,end:600,title:"第四部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:600,end:720,title:"第五部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:720,end:840,title:"第六部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:840,end:960,title:"第七部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:960,end:1080,title:"第八部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:1080,end:1200,title:"第九部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:1200,end:1320,title:"第十部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:1320,end:1440,title:"第十一部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:1440,end:1560,title:"第十二部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:1560,end:1680,title:"第十三部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:1680,end:1800,title:"第十四部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:1800,end:1920,title:"第十五部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:1920,end:2040,title:"第十六部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:2040,end:2160,title:"第十七部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:2160,end:2280,title:"第十八部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:2280,end:2400,title:"第十九部分内容"},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{start:2400,end:2639,title:"结尾总结"}</p>
+<p class="p1">];</p>
+<p class="p2"><br></p>
+<p class="p1">function loadPlayerAndSegments(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const bvid = document.getElementById('bvid').value.trim();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!bvid){ alert("请输入 BV 号！"); return; }</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('player').innerHTML = `&lt;iframe id="bplayer" src="https://player.bilibili.com/player.html?bvid=${bvid}&amp;page=1" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>renderSegmentBars();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>renderTable();</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// 渲染滑块</p>
+<p class="p1">function renderSegmentBars(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const barDiv = document.getElementById('segmentBars');</p>
+<p class="p1"><span class="Apple-converted-space">  </span>barDiv.innerHTML = '';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const totalSec = 2640;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>segmentsData.forEach((seg)=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const segDiv = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>segDiv.className = 'segment';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>segDiv.style.left = (seg.start/totalSec*100)+'%';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>segDiv.style.width = ((seg.end-seg.start)/totalSec*100)+'%';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>segDiv.textContent = seg.title;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>barDiv.appendChild(segDiv);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>barDiv.className = 'segment-bar';</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// 渲染表格</p>
+<p class="p1">function renderTable(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>let html = '&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;开始秒&lt;/th&gt;&lt;th&gt;结束秒&lt;/th&gt;&lt;th&gt;标题&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>segmentsData.forEach(seg=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>html += `&lt;tr onclick="jumpToSegment(${seg.start})"&gt;&lt;td&gt;${seg.start}&lt;/td&gt;&lt;td&gt;${seg.end}&lt;/td&gt;&lt;td&gt;${seg.title}&lt;/td&gt;&lt;/tr&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>html += '&lt;/tbody&gt;&lt;/table&gt;';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('tableDiv').innerHTML = html;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function jumpToSegment(sec){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const bvid = document.getElementById('bvid').value.trim();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const iframe = document.getElementById("bplayer");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>iframe.src = `https://player.bilibili.com/player.html?bvid=${bvid}&amp;page=1&amp;t=${sec}`;</p>
+<p class="p1">}</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
